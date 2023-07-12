@@ -14,5 +14,8 @@
     "test": "npm run test --prefix server && npm run test --prefix client"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "morgan": "^1.10.0"
+  }
 }

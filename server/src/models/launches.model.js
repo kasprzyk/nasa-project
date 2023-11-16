@@ -29,8 +29,8 @@ async function saveLaunch(launch) {
     );
 }
 
-function getAllLaunches() {
-    return Array.from(launches.values());
+async function getAllLaunches() {
+    return await launchesDatabase.find({}, {});
 }
 
 async function existsLaunchWithId(launchId) {

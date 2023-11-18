@@ -14,20 +14,20 @@ describe('Test POST /launch', () => {
     const completeLaunchData = {
         mission: 'USS Enterprise',
         rocket: 'NCC 1701-D',
-        destination: 'Kepler-186 f',
+        target: 'Kepler-186 f',
         launchDate: 'January 4, 2028',
     };
 
     const launchDataWithoutDate = {
         mission: 'USS Enterprise',
         rocket: 'NCC 1701-D',
-        destination: 'Kepler-186 f',
+        target: 'Kepler-186 f',
     };
 
     const launchDataWithInvalidDate = {
         mission: 'USS Enterprise',
         rocket: 'NCC 1701-D',
-        destination: 'Kepler-186 f',
+        target: 'Kepler-186 f',
         launchDate: 'ASD',
     };
     test('It should respond with 200 success', async () => {

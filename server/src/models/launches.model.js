@@ -1,14 +1,13 @@
 const launchesDatabase = require('./launches.mongo');
 const planets = require('./planets.mongo');
 const launches = new Map();
-
-let latestFlightNumber = 100;
+const DEFAULT_FLIGHT_NUMBER = 100;
 
 const launch = {
     mission: 'Kepler Exploration X',
     rocket: 'Explorer IS1',
     launchDate: new Date('December 27, 2030'),
-    destination: 'Kepler-442 b',
+    target: 'Kepler-442 b',
     flightNumber: 100,
     upcoming: true,
     success: true,
@@ -44,17 +43,35 @@ async function existsLaunchWithId(launchId) {
     return launches.has(launchId);
 }
 
-function addNewLaunch(launch) {
-    latestFlightNumber++;
-    launches.set(
-        latestFlightNumber,
-        Object.assign(launch, {
-            upcoming: true,
-            success: true,
-            flightNumber: latestFlightNumber,
-            customer: ['NASA', 'SpaceX'],
-        }),
-    );
+async function getLatestFlightNumber() {
+    const latestLaunch = await launchesDatabase.findOne().sort('-flightNumber');
+
+    if (!latestLaunch) {
+        return DEFAULT_FLIGHT_NUMBER;
+    }
+
+    return latestLaunch.flightNumber;
+}
+
+async function scheduleNewLaunch(launch) {
+    const planet = await planets.findOne({
+        keplerName: launch.target,
+    });
+
+    if (!planet) {
+        throw new Error('No matching planet found');
+    }
+
+    const newFlightNumber = (await getLatestFlightNumber()) + 1;
+
+    const newLaunch = Object.assign(launch, {
+        success: true,
+        upcoming: true,
+        customers: ['NASA', 'SpaceX'],
+        flightNumber: newFlightNumber,
+    });
+
+    await saveLaunch(newLaunch);
 }
 
 function abortLaunchById(launchId) {
@@ -66,7 +83,7 @@ function abortLaunchById(launchId) {
 
 module.exports = {
     getAllLaunches,
-    addNewLaunch,
     existsLaunchWithId,
     abortLaunchById,
+    scheduleNewLaunch,
 };

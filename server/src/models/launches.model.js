@@ -17,8 +17,22 @@ saveLaunch(launch);
 
 //launches.set(launch.flightNumber, launch);
 const SPACEX_API_URL = 'https://api.spacexdata.com/v4/launches/query';
+
 async function loadLaunchData() {
-    console.log('Downloading data');
+    const firstLaunch = await findLaunch({
+        flightNumber: 1,
+        rocket: 'Falcon 1',
+        mission: 'FalconSat',
+    });
+    if (firstLaunch) {
+        console.log('Launch data already loaded!');
+    } else {
+        await populateLaunches();
+    }
+}
+
+async function populateLaunches() {
+    console.log('Downloading launch data...');
     const response = await axios.post(SPACEX_API_URL, {
         query: {},
         options: {
@@ -39,12 +53,19 @@ async function loadLaunchData() {
             ],
         },
     });
+
+    if (response.status !== 200) {
+        console.log('Problem downloading launch data');
+        throw new Error('Launch data download failed');
+    }
+
     const launchDocs = response.data.docs;
     for (const launchDoc of launchDocs) {
         const payloads = launchDoc['payloads'];
         const customers = payloads.flatMap((payload) => {
             return payload['customers'];
         });
+
         const launch = {
             flightNumber: launchDoc['flight_number'],
             mission: launchDoc['name'],
@@ -54,7 +75,10 @@ async function loadLaunchData() {
             success: launchDoc['success'],
             customers,
         };
+
         console.log(`${launch.flightNumber} ${launch.mission}`);
+
+        await saveLaunch(launch);
     }
 }
 
@@ -80,8 +104,12 @@ async function getAllLaunches() {
     return await launchesDatabase.find({}, {});
 }
 
+async function findLaunch(filter) {
+    return await launchesDatabase.findOne(filter);
+}
+
 async function existsLaunchWithId(launchId) {
-    return await launchesDatabase.findOne({
+    return await findLaunch({
         flightNumber: launchId,
     });
 }

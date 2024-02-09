@@ -2,6 +2,13 @@ const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const passport = require('passport');
+const cookieSession = require('cookie-session');
+const session = require('express-session')({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true,
+});
+
 const { Strategy } = require('passport-google-oauth20');
 
 require('dotenv').config();
@@ -28,6 +35,14 @@ passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
 
 const app = express();
 app.use(helmet());
+app.use(session);
+// app.use(
+//     cookieSession({
+//         name: 'session',
+//         maxAge: 24 * 60 * 60 * 1000,
+//         keys: [config.COOKIE_KEY_1, config.COOKIE_KEY_2],
+//     }),
+// );
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -44,9 +59,24 @@ function checkLoggedIn(req, res, next) {
     next();
 }
 
-app.get('/auth/google', (req, res) => {});
+app.get(
+    '/auth/google',
+    passport.authenticate('google', {
+        scope: ['email'],
+    }),
+);
 
-app.get('/auth/google/callback', (req, res) => {});
+app.get(
+    '/auth/google/callback',
+    passport.authenticate('google', {
+        failureRedirect: '/failure',
+        successRedirect: '/',
+        session: false,
+    }),
+    (req, res) => {
+        console.log('Google called us back!');
+    },
+);
 
 app.get('/auth/logout', (req, res, next) => {});
 
@@ -56,6 +86,10 @@ app.get('/secret', checkLoggedIn, (req, res) => {
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/failure', (req, res) => {
+    return res.send('Failed to log in!');
 });
 
 app.listen(PORT, () => {

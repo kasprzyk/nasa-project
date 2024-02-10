@@ -35,6 +35,14 @@ function verifyCallback(accessToken, refreshToken, profile, done) {
 
 passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
 
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+    done(null, id);
+});
+
 const app = express();
 app.use(helmet());
 //app.use(session);
@@ -73,7 +81,7 @@ app.get(
     passport.authenticate('google', {
         failureRedirect: '/failure',
         successRedirect: '/',
-        session: false,
+        session: true,
     }),
     (req, res) => {
         console.log('Google called us back!');

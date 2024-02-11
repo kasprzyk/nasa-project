@@ -89,7 +89,15 @@ app.get(
     },
 );
 
-app.get('/auth/logout', (req, res, next) => {});
+app.get('/auth/logout', (req, res, next) => {
+    //Removes req.user and clears any logged in session
+    req.logout((err) => {
+        if (err) {
+            return next(err);
+        }
+        res.redirect('/');
+    });
+});
 
 app.get('/secret', checkLoggedIn, (req, res) => {
     return res.send('Your personal secret value is 42!');

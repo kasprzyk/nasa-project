@@ -15,3 +15,4 @@ jobs:
           node-version: "14"
       - run: npm run install-server
       - run: npm run install-client
+      - run: npm run build --prefix client

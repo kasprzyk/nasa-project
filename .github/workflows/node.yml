@@ -13,5 +13,5 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "14"
-      - run: npm install-server
-      - run: npm install-client
+      - run: npm run install-server
+      - run: npm run install-client
